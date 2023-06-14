@@ -46,12 +46,11 @@ namespace RVO {
 		kdTree_ = new KdTree(this);
 	}
 
-	RVOSimulator::RVOSimulator(float timeStep, float peturb, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity, const Vector2 &target) : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(timeStep)
+	RVOSimulator::RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity, const Vector2 &target) : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(timeStep)
 	{
 		kdTree_ = new KdTree(this);
 		defaultAgent_ = new Agent(this);
 
-		defaultAgent_->peturb_ = peturb;
 		defaultAgent_->maxNeighbors_ = maxNeighbors;
 		defaultAgent_->maxSpeed_ = maxSpeed;
 		defaultAgent_->neighborDist_ = neighborDist;
@@ -88,7 +87,6 @@ namespace RVO {
 		Agent *agent = new Agent(this);
 
 		agent->position_ = position;
-		agent->peturb_ = defaultAgent_->peturb_;
 		agent->maxNeighbors_ = defaultAgent_->maxNeighbors_;
 		agent->maxSpeed_ = defaultAgent_->maxSpeed_;
 		agent->neighborDist_ = defaultAgent_->neighborDist_;
@@ -105,12 +103,11 @@ namespace RVO {
 		return agents_.size() - 1;
 	}
 
-	size_t RVOSimulator::addAgent(const Vector2 &position, float peturb, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity, const Vector2 &target)
+	size_t RVOSimulator::addAgent(const Vector2 &position, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity, const Vector2 &target)
 	{
 		Agent *agent = new Agent(this);
 
 		agent->position_ = position;
-		agent->peturb_ = peturb;
 		agent->maxNeighbors_ = maxNeighbors;
 		agent->maxSpeed_ = maxSpeed;
 		agent->neighborDist_ = neighborDist;
@@ -253,10 +250,6 @@ namespace RVO {
 		return agents_[agentNo]->end_;
 	}
 
-	float RVOSimulator::getAgentPeturb(size_t agentNo) const {
-		return agents_[agentNo]->peturb_;
-	}
-
 	float RVOSimulator::getAgentRadius(size_t agentNo) const
 	{
 		return agents_[agentNo]->radius_;
@@ -327,13 +320,12 @@ namespace RVO {
 		return kdTree_->queryVisibility(point1, point2, radius);
 	}
 
-	void RVOSimulator::setAgentDefaults(float peturb, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
+	void RVOSimulator::setAgentDefaults(float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
 	{
 		if (defaultAgent_ == NULL) {
 			defaultAgent_ = new Agent(this);
 		}
-		
-		defaultAgent_->peturb_ = peturb;
+
 		defaultAgent_->maxNeighbors_ = maxNeighbors;
 		defaultAgent_->maxSpeed_ = maxSpeed;
 		defaultAgent_->neighborDist_ = neighborDist;
@@ -377,12 +369,6 @@ namespace RVO {
 	{
 		agents_[agentNo]->radius_ = radius;
 	}
-
-	void RVOSimulator::setAgentPeturb(size_t agentNo, float peturb)
-	{
-		agents_[agentNo]->peturb_ = peturb;
-	}
-
 
 	void RVOSimulator::setAgentTimeHorizon(size_t agentNo, float timeHorizon)
 	{

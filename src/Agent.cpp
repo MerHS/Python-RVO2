@@ -39,10 +39,7 @@
 #include <algorithm>
 
 namespace RVO {
-    Agent::Agent(RVOSimulator *sim) : maxNeighbors_(0), peturb_(0.0f), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), sim_(sim), timeHorizon_(0.0f), timeHorizonObst_(0.0f), collabCoeff_(0.5f), id_(0), prefOverride_(false), end_(false) { 
-        std::random_device rd;
-        gen_ = std::mt19937(rd());
-    }
+    Agent::Agent(RVOSimulator *sim) : maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), sim_(sim), timeHorizon_(0.0f), timeHorizonObst_(0.0f), collabCoeff_(0.5f), id_(0), prefOverride_(false), end_(false) { }
 
     void Agent::computeNeighbors()
     {
@@ -473,30 +470,22 @@ namespace RVO {
 
     void Agent::update()
     {
-        // std::cout << newVelocity_ << std::endl
-        if (!end_) {
-            velocity_ = newVelocity_;
-            position_ += velocity_ * sim_->timeStep_;
+        // std::cout << newVelocity_ << std::endl;
+        velocity_ = newVelocity_;
+        position_ += velocity_ * sim_->timeStep_;
 
-            if (!prefOverride_) {
-                float vel = abs(prefVelocity_);
-                Vector2 togo = target_ - position_;
-                float dist = abs(togo);
+        if (!prefOverride_) {
+            float vel = abs(prefVelocity_);
+            Vector2 togo = target_ - position_;
+            float dist = abs(togo);
 
-                if (dist < 0.05) {
-                    end_ = true;
-                    prefVelocity_ = Vector2(0, 0);
-                } else {
-                    prefVelocity_ = togo / dist * vel;
-                    std::uniform_real_distribution<float> dist(-peturb_, peturb_);
-                    Vector2 addvel = Vector2(dist(gen_), dist(gen_));
-                    velocity_ += addvel;
-                    newVelocity_ += addvel;
-                    position_ += addvel * sim_->timeStep_;
-                }
+            if (dist < 0.05) {
+                end_ = true;
+                prefVelocity_ = Vector2(0, 0);
+            } else {
+                prefVelocity_ = togo / dist * vel;
             }
         }
-        
     }
 
     bool linearProgram1(const std::vector<Line> &lines, size_t lineNo, float radius, const Vector2 &optVelocity, bool directionOpt, Vector2 &result)
