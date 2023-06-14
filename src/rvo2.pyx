@@ -24,11 +24,11 @@ cdef extern from "RVOSimulator.h" namespace "RVO":
 cdef extern from "RVOSimulator.h" namespace "RVO":
     cdef cppclass RVOSimulator:
         RVOSimulator()
-        RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors,
+        RVOSimulator(float timeStep, float peturb, float neighborDist, size_t maxNeighbors,
                      float timeHorizon, float timeHorizonObst, float radius,
                      float maxSpeed, const Vector2 & velocity)
         size_t addAgent(const Vector2 & position)
-        size_t addAgent(const Vector2 & position, float neighborDist,
+        size_t addAgent(const Vector2 & position, float peturb, float neighborDist,
                         size_t maxNeighbors, float timeHorizon,
                         float timeHorizonObst, float radius, float maxSpeed,
                         const Vector2 & velocity)
@@ -45,6 +45,9 @@ cdef extern from "RVOSimulator.h" namespace "RVO":
         const Line & getAgentORCALine(size_t agentNo, size_t lineNo) const
         const Vector2 & getAgentPosition(size_t agentNo) const
         const Vector2 & getAgentPrefVelocity(size_t agentNo) const
+        const Vector2 & getAgentTarget(size_t agentNo) const
+        bool getAgentEnd(size_t agentNo) const
+        float getAgentPeturb(size_t agentNo) const
         float getAgentRadius(size_t agentNo) const
         float getAgentTimeHorizon(size_t agentNo) const
         float getAgentTimeHorizonObst(size_t agentNo) const
@@ -60,7 +63,7 @@ cdef extern from "RVOSimulator.h" namespace "RVO":
         void processObstacles() nogil
         bool queryVisibility(const Vector2 & point1, const Vector2 & point2,
                              float radius) nogil const
-        void setAgentDefaults(float neighborDist, size_t maxNeighbors,
+        void setAgentDefaults(float peturb, float neighborDist, size_t maxNeighbors,
                               float timeHorizon, float timeHorizonObst,
                               float radius, float maxSpeed,
                               const Vector2 & velocity)
@@ -69,7 +72,9 @@ cdef extern from "RVOSimulator.h" namespace "RVO":
         void setAgentNeighborDist(size_t agentNo, float neighborDist)
         void setAgentPosition(size_t agentNo, const Vector2 & position)
         void setAgentPrefVelocity(size_t agentNo, const Vector2 & prefVelocity)
+        void setAgentTarget(size_t agentNo, const Vector2 & target)
         void setAgentRadius(size_t agentNo, float radius)
+        void setAgentPeturb(size_t agentNo, float peturb)
         void setAgentTimeHorizon(size_t agentNo, float timeHorizon)
         void setAgentTimeHorizonObst(size_t agentNo, float timeHorizonObst)
         void setAgentCollabCoeff(size_t agentNo, float collabCoeff)
@@ -80,16 +85,16 @@ cdef extern from "RVOSimulator.h" namespace "RVO":
 cdef class PyRVOSimulator:
     cdef RVOSimulator *thisptr
 
-    def __cinit__(self, float timeStep, float neighborDist, size_t maxNeighbors,
+    def __cinit__(self, float timeStep, float peturb, float neighborDist, size_t maxNeighbors,
                   float timeHorizon, float timeHorizonObst, float radius,
                   float maxSpeed, tuple velocity=(0, 0)):
         cdef Vector2 c_velocity = Vector2(velocity[0], velocity[1])
 
-        self.thisptr = new RVOSimulator(timeStep, neighborDist, maxNeighbors,
+        self.thisptr = new RVOSimulator(timeStep, peturb, neighborDist, maxNeighbors,
                                         timeHorizon, timeHorizonObst, radius,
                                         maxSpeed, c_velocity)
 
-    def addAgent(self, tuple pos, neighborDist=None,
+    def addAgent(self, tuple pos, peturb=None, neighborDist=None,
                  maxNeighbors=None, timeHorizon=None,
                  timeHorizonObst=None, radius=None, maxSpeed=None,
                  velocity=None):
@@ -103,7 +108,7 @@ cdef class PyRVOSimulator:
             agent_nr = self.thisptr.addAgent(c_pos)
         else:
             c_velocity = Vector2(velocity[0], velocity[1])
-            agent_nr = self.thisptr.addAgent(c_pos, neighborDist,
+            agent_nr = self.thisptr.addAgent(c_pos, peturb, neighborDist,
                                              maxNeighbors, timeHorizon,
                                              timeHorizonObst, radius, maxSpeed,
                                              c_velocity)
@@ -153,6 +158,13 @@ cdef class PyRVOSimulator:
     def getAgentPrefVelocity(self, size_t agent_no):
         cdef Vector2 velocity = self.thisptr.getAgentPrefVelocity(agent_no)
         return velocity.x(), velocity.y()
+    def getAgentTarget(self, size_t agent_no):
+        cdef Vector2 target = self.thisptr.getAgentTarget(agent_no)
+        return target.x(), target.y()
+    def getAgentEnd(self, size_t agent_no):
+        return self.thisptr.getAgentEnd(agent_no)
+    def getAgentPeturb(self, size_t agent_no):
+        return self.thisptr.getAgentPeturb(agent_no)
     def getAgentRadius(self, size_t agent_no):
         return self.thisptr.getAgentRadius(agent_no)
     def getAgentTimeHorizon(self, size_t agent_no):
@@ -194,11 +206,11 @@ cdef class PyRVOSimulator:
 
         return visible
 
-    def setAgentDefaults(self, float neighbor_dist, size_t max_neighbors, float time_horizon,
+    def setAgentDefaults(self, float peturb, float neighbor_dist, size_t max_neighbors, float time_horizon,
                          float time_horizon_obst, float radius, float max_speed,
                          tuple velocity=(0, 0)):
         cdef Vector2 c_velocity = Vector2(velocity[0], velocity[1])
-        self.thisptr.setAgentDefaults(neighbor_dist, max_neighbors, time_horizon,
+        self.thisptr.setAgentDefaults(peturb, neighbor_dist, max_neighbors, time_horizon,
                                       time_horizon_obst, radius, max_speed, c_velocity)
 
     def setAgentMaxNeighbors(self, size_t agent_no, size_t max_neighbors):
@@ -215,8 +227,13 @@ cdef class PyRVOSimulator:
     def setAgentPrefVelocity(self, size_t agent_no, tuple velocity):
         cdef Vector2 c_velocity = Vector2(velocity[0], velocity[1])
         self.thisptr.setAgentPrefVelocity(agent_no, c_velocity)
+    def setAgentTarget(self, size_t agent_no, tuple target):
+        cdef Vector2 c_target = Vector2(target[0], target[1])
+        self.thisptr.setAgentTarget(agent_no, c_target)
     def setAgentRadius(self, size_t agent_no, float radius):
         self.thisptr.setAgentRadius(agent_no, radius)
+    def setAgentPeturb(self, size_t agent_no, float peturb):
+        self.thisptr.setAgentPeturb(agent_no, peturb)
     def setAgentTimeHorizon(self, size_t agent_no, float time_horizon):
         self.thisptr.setAgentTimeHorizon(agent_no, time_horizon)
     def setAgentTimeHorizonObst(self, size_t agent_no, float timeHorizonObst):

@@ -37,6 +37,7 @@
  * \file       Agent.h
  * \brief      Contains the Agent class.
  */
+#include <random>
 
 #include "Definitions.h"
 #include "RVOSimulator.h"
@@ -93,14 +94,19 @@ namespace RVO {
 		Vector2 newVelocity_;
 		std::vector<std::pair<float, const Obstacle *> > obstacleNeighbors_;
 		std::vector<Line> orcaLines_;
+		float peturb_;
 		Vector2 position_;
 		Vector2 prefVelocity_;
+		Vector2 target_;
 		float radius_;
 		RVOSimulator *sim_;
 		float timeHorizon_;
 		float timeHorizonObst_;
 		Vector2 velocity_;
 		float collabCoeff_;
+		bool prefOverride_;
+		bool end_;
+		std::mt19937 gen_;
 
 		size_t id_;
 

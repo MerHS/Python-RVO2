@@ -126,9 +126,11 @@ namespace RVO {
 		 * \param      velocity        The default initial two-dimensional linear
 		 *                             velocity of a new agent (optional).
 		 */
-		RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors,
+		RVOSimulator(float timeStep, float peturb, float neighborDist, size_t maxNeighbors,
 					 float timeHorizon, float timeHorizonObst, float radius,
-					 float maxSpeed, const Vector2 &velocity = Vector2());
+					 float maxSpeed, 
+					 const Vector2 &velocity = Vector2(),
+					 const Vector2 &target = Vector2());
 
 		/**
 		 * \brief      Destroys this simulator instance.
@@ -186,10 +188,11 @@ namespace RVO {
 		 *                             of this agent (optional).
 		 * \return     The number of the agent.
 		 */
-		size_t addAgent(const Vector2 &position, float neighborDist,
+		size_t addAgent(const Vector2 &position, float peturb, float neighborDist,
 						size_t maxNeighbors, float timeHorizon,
 						float timeHorizonObst, float radius, float maxSpeed,
-						const Vector2 &velocity = Vector2());
+						const Vector2 &velocity = Vector2(),
+						const Vector2 &target = Vector2());
 
 		/**
 		 * \brief      Adds a new obstacle to the simulation.
@@ -323,6 +326,11 @@ namespace RVO {
 		 */
 		const Vector2 &getAgentPrefVelocity(size_t agentNo) const;
 
+		const Vector2 &getAgentTarget(size_t agentNo) const;
+
+		float getAgentPeturb(size_t agentNo) const;
+
+		bool getAgentEnd(size_t agentNo) const;
 		/**
 		 * \brief      Returns the radius of a specified agent.
 		 * \param      agentNo         The number of the agent whose radius is to
@@ -485,7 +493,7 @@ namespace RVO {
 		 * \param      velocity        The default initial two-dimensional linear
 		 *                             velocity of a new agent (optional).
 		 */
-		void setAgentDefaults(float neighborDist, size_t maxNeighbors,
+		void setAgentDefaults(float peturb, float neighborDist, size_t maxNeighbors,
 							  float timeHorizon, float timeHorizonObst,
 							  float radius, float maxSpeed,
 							  const Vector2 &velocity = Vector2());
@@ -536,6 +544,8 @@ namespace RVO {
 		 */
 		void setAgentPrefVelocity(size_t agentNo, const Vector2 &prefVelocity);
 
+		void setAgentTarget(size_t agentNo, const Vector2 &target);
+
 		/**
 		 * \brief      Sets the radius of a specified agent.
 		 * \param      agentNo         The number of the agent whose radius is to
@@ -544,6 +554,8 @@ namespace RVO {
 		 *                             Must be non-negative.
 		 */
 		void setAgentRadius(size_t agentNo, float radius);
+
+		void setAgentPeturb(size_t agentNo, float peturb);
 
 		/**
 		 * \brief      Sets the time horizon of a specified agent with respect
